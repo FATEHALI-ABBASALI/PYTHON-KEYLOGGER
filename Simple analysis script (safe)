@@ -1,0 +1,32 @@
+import csv
+from datetime import datetime
+from collections import Counter
+
+LOG_FILE = "keystroke_demo_log.csv"
+
+timestamps = []
+chars = []
+
+with open(LOG_FILE, encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        ts = row["timestamp_iso"]
+        try:
+            dt = datetime.fromisoformat(ts.replace("Z",""))
+        except Exception:
+            continue
+        timestamps.append(dt)
+        if row.get("char"):
+            chars.append(row["char"])
+
+if not timestamps:
+    print("No data found.")
+    raise SystemExit
+
+total = len(timestamps)
+duration = (max(timestamps) - min(timestamps)).total_seconds() or 1
+kps = total / duration
+print(f"Total keystrokes: {total}")
+print(f"Duration (s): {duration:.1f}")
+print(f"Keystrokes per second: {kps:.3f}")
+print("Top 10 characters:", Counter(chars).most_common(10))
